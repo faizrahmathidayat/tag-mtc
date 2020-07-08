@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="PT. TAG" />
+    <meta name="author" content="PT. TAG" />
+    <title>LOGIN - PT. TAG</title>
+    <link href="dist/css/styles.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js" crossorigin="anonymous"></script>
+    <!-- sweetalert2 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/8.11.8/sweetalert2.all.js"></script>
+</head>
+<body class="bg-primary">
+    <div id="layoutAuthentication">
+        <div id="layoutAuthentication_content">
+            <main>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-5">
+                            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                                <div class="card-header"><h3 class="text-center font-weight-light my-4">Login</h3></div>
+                                <div class="card-body">
+                                    <form action="" method="POST" id="login-form">
+                                        <div class="form-group">
+                                            <label class="small mb-1" for="inputUsername">Username</label>
+                                            <input type="text" name="username" class="form-control" id="username" placeholder="username">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="small mb-1" for="inputPassword">Password</label>
+                                            <input type="password" name="password" class="form-control" id="signin-password" placeholder="Password">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="captcha" class="control-label sr-only">Captcha</label>
+                                            <img src="library/captcha.php" alt="gambar" style="margin-bottom: 10px;" />
+                                            <input type="text" name="captcha" class="form-control" id="captcha" placeholder="masukkan captcha" onkeypress="return hanyaAngka(event)">
+                                        </div>
+                                        <div class="form-group d-flex align-items-center justify-content-between mt-4 mb-0">
+                                            <button class="btn btn-lg btn-primary btn-block" name="btn-login" id="btn-login" type="submit">Login</button>
+                                        </div>
+                                    </form>
+                                    <div id="error" style="margin-top: 10px"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        <div id="layoutAuthentication_footer">
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="dist/js/scripts.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js"></script>
+    <script>
+        function hanyaAngka(evt) {
+            var charCode = (evt.which) ? evt.which : event.keyCode
+            if (charCode > 31 && (charCode < 48 || charCode > 57))
+                return false;
+            return true;
+        }
+        $(document).ready(function(){
+            $("#login-form").validate({
+                rules:
+                {
+                    password: {
+                        required: true,
+                    },
+                    username: {
+                      required: true,
+                    },
+                    captcha: {
+                       required: true,
+                    },
+                },
+                messages:
+                {
+                    password:{
+                      required: "<span style='color:red'>please enter your password</span>"
+                    },
+                    captcha:{
+                      required: "<span style='color:red'>please enter your captcha</span>"
+                    },
+                    username: "<span style='color:red'>please enter your username</span>",
+                },
+                submitHandler: submitForm 
+            });
+            function submitForm() {  
+                var data = $("#login-form").serialize();
+                $.ajax({
+                    type : 'POST',
+                    url  : 'auth/auth.php',
+                    data : data,
+                    dataType: 'json',
+                    beforeSend: function()
+                    { 
+                        $("#error").fadeOut();
+                        $("#btn-login").html('<i class="fas fa-spinner fa-spin"></i>&nbsp;sending ...');
+                    },
+                    success :  function(response)
+                    {  
+                        if(response.status == "success"){
+                            if(response.role == "kuncen") {
+                                setTimeout('window.location.href = "apps/kuncen/index.php"; ',4000);
+                            } else if(response.role == "kordinator") {
+                                setTimeout('window.location.href = "apps/kordinator/index.php"; ',4000);
+                            } else if(response.role == "mtc") {
+                                setTimeout('window.location.href = "apps/mtc/index.php"; ',4000);
+                            } else {
+                                alert('role tidak ditemukan');
+                                return false;
+                            }
+                        } else if(response.status == "warning"){
+                          $("#error").fadeIn(1000, function(){
+                            Swal.fire({
+                              type: response.status,
+                              title: 'Oops...',
+                              html: '<b>'+response.msg+'!'
+                            }).then(function(){
+                              window.location = "/template/tag";
+                            });
+                          });
+                        } else {
+                          $("#error").fadeIn(1000, function(){
+                            Swal.fire({
+                              type: response.status,
+                              title: 'Oops...',
+                              html: '<b>'+response.msg+'!'
+                            })   
+                            $("#btn-login").html('Login');
+                          });
+                        }
+                    }
+                });
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>
